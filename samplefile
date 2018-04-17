@@ -1,0 +1,218 @@
+
+
+
+
+import java.util.LinkedList;
+
+public class Solver {
+	public Solver(Board initial) {
+	} // find a solution to the initial board (using the A* algorithm)
+
+	public boolean isSolvable() {
+		return false;
+	} // is the initial board solvable?
+
+	public int moves() {
+		return 0;
+	} // min number of moves to solve initial board; -1 if unsolvable
+
+	public Iterable<Board> solution() {
+		return null;
+	} // sequence of boards in a shortest solution; null if unsolvable
+
+	public static void main(String[] args) {
+		// create initial board from file
+		Iterable<Board> list=new LinkedList<Board>();
+		In in = new In(args[0]);
+		int n = in.readInt();
+		int[][] blocks = new int[n][n];
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < n; j++)
+				blocks[i][j] = in.readInt();
+		
+		
+		Board initial = new Board(blocks);
+
+		//System.out.println(initial.hamming());
+		//System.out.println(initial.manhattan());
+		//list=initial.neighbors();
+		
+	//	for(Board a:list){
+			//System.out.println(a);
+		//}
+		// solve the puzzle
+		/*Solver solver = new Solver(initial);
+
+		// print solution to standard output
+		if (!solver.isSolvable())
+			StdOut.println("No solution possible");
+		else {
+			StdOut.println("Minimum number of moves = " + solver.moves());
+
+			for (Board board : solver.solution())
+				StdOut.println(board);
+		}*/
+	} // solve a slider puzzle (given below)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+import java.util.LinkedList;
+
+public class Board {
+	private int[][] puzzle;
+	private int length;
+
+	public Board(int[][] blocks) {
+
+		puzzle = blocks;
+		length = puzzle.length;
+	} // construct a board from an n-by-n array of blocks
+		// (where blocks[i][j] = block in row i, column j)
+
+	public int dimension() {
+		return length;
+	} // board dimension n
+
+	public int hamming() {
+		int hamming = 0;
+		for (int i = 0; i < length; i++) {
+			for (int j = 0; j < length; j++) {
+				if(puzzle[i][j]==0){
+					continue;
+				}
+				if (puzzle[i][j] != (i* length  + j + 1)) {
+					hamming++;
+				}
+			}
+		}
+		return hamming;
+	} // number of blocks out of place
+
+	public int manhattan() {
+		int manhattan=0;
+		for (int i = 0; i < length; i++) {
+			for (int j = 0; j < length; j++) {
+				
+				
+				
+				if(puzzle[i][j]==0){
+					continue;
+				}
+				if (puzzle[i][j] != (i* length  + j + 1)) {
+					//System.out.println(puzzle[i][j]+"---"+(i* length  + j + 1));
+					int column=Math.abs(puzzle[i][j]%length-1);
+					int row=0;
+				//	System.out.println("column:"+column);
+					if(column!=0){
+						row=puzzle[i][j]/length;
+						//System.out.println("1>row:"+row+"column:"+column);
+					}else{
+						row=puzzle[i][j]/length;
+						column=length-1;
+						//System.out.println("2>row:"+row+"column:"+column);
+					}
+					//System.out.println("row"+i+"col"+j+"--"+(Math.abs(row-i)+Math.abs(column-j))+"--"+i+"-"+j);
+					manhattan+=Math.abs(row-i)+Math.abs(column-j);
+					
+				}
+				
+			}
+		}
+		
+		
+		return manhattan;
+	} // sum of Manhattan distances between blocks and goal
+
+	public boolean isGoal() {
+		for (int i = 0; i < puzzle.length; i++) {
+			for (int j = 0; j < puzzle.length; j++) {
+				if(puzzle[i][j]<puzzle[i][j+1]) return false;
+			}
+		}
+		return true;
+	} // is this board the goal board?
+
+	
+    private int[][] copy(int[][] blocks) {
+        int[][] copy = new int[blocks.length][blocks.length];
+        for (int row = 0; row < blocks.length; row++)
+            for (int col = 0; col < blocks.length; col++)
+                copy[row][col] = blocks[row][col];
+
+        return copy;
+    }
+	public Board twin() {
+		return null;
+	} // a board that is obtained by exchanging any pair of blocks
+
+	public boolean equals(Object y) {
+		return false;
+	} // does this board equal y?
+
+	private int[][] swap(int row1,int col1,int row2,int col2){
+		int temp;
+		int[][] intermediatePuzzle=copy(puzzle);
+		temp=intermediatePuzzle[row1][col1];
+		intermediatePuzzle[row1][col1]=intermediatePuzzle[row2][col2];
+		intermediatePuzzle[row2][col2]=temp;
+		return intermediatePuzzle;
+	}
+	public Iterable<Board> neighbors() {
+		
+		LinkedList<Board> list=new LinkedList<Board>();
+		
+		int[] location=spaceFinder();
+		int row=location[0];
+		int col=location[1];
+		if(row>0) list.add(new Board(swap(row, col, row-1, col)));
+		if(row<length-1) list.add(new Board(swap(row, col, row+1, col)));
+		if(col>0) list.add(new Board(swap(row, col, row, col-1)));
+		if(col<length-1) list.add(new Board(swap(row, col, row, col+1)));
+		return list;
+	}// all neighboring boards
+
+	
+	private int[] spaceFinder(){
+		int[] location=new int[2];
+		for (int i = 0; i < puzzle.length; i++) {
+			for (int j = 0; j < puzzle.length; j++) {
+				
+				if(puzzle[i][j]==0){
+						location[0]=i;
+						location[1]=j;
+						
+				}
+				
+			}
+		}
+		return location;
+		
+	}
+	public String toString() {
+		String returnString="";
+		for (int i = 0; i < puzzle.length; i++) {
+			for (int j = 0; j < puzzle.length; j++) {
+				returnString+=puzzle[i][j]+" ";
+			}
+			returnString+="\n";
+		}
+
+		return returnString;
+	}// string representation of this board (in the output format specified
+		// below)
+
+	public static void main(String[] args) {
+
+	} // unit tests (not graded)
+}
